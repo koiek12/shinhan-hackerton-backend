@@ -10,7 +10,9 @@ router.post('/', function(req, res, next) {
     if(user.dataValues.password == req.body.password) {
         res.json({status:"okay"});
         /*
-          신한 api에서 마지막으로 가져온 데이터 이후의 데이터를 모두 가져와서 테이블에 추가한다.
+          데이터 갱신시도는 로그인시마다,
+          신한 api에서 마지막으로 가져온 데이터(lastBankSyncTime) 이후의 데이터를 모두 가져와서 테이블에 추가한다.
+          추가한 뒤 lastBankSyncTime을 현재로 갱신한다.
         */
         let domesticCredit = await shinhanApi.getDomesticCreditCardUseage(req.body.userId);
         let domesticCheck = await shinhanApi.getDomesticCheckCardUseage(req.body.userId);
