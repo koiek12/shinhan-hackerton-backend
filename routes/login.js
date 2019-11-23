@@ -15,7 +15,6 @@ router.post('/', function(req, res, next) {
         let overseasCredit = await shinhanApi.getOverseasCreditCardUseage(req.body.userId);
         let overseasCheck = await shinhanApi.getOverseasCheckCardUseage(req.body.userId);
         let transactionHistory = await shinhanApi.getTrasactionHistory(req.body.userId);
-
         models.transaction.bulkCreate(
           domesticCreditToTransaction(req.body.userId, domesticCredit.data)
           );
@@ -31,7 +30,6 @@ router.post('/', function(req, res, next) {
         models.transaction.bulkCreate(
           transactionHistoryToTransaction(req.body.userId, transactionHistory.data)
           );
-        
     } else {
         res.json({status:"fail"});
     }

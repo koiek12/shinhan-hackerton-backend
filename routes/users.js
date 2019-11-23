@@ -138,6 +138,8 @@ router.get('/:user_id/incomes/_simple', function(req, res, next) {
   let start = new Date(req.query.start);
   let end = new Date(req.query.end);
   end.setDate(end.getDate()+1);
+  start.setHours(start.getHours()-9);
+  end.setHours(end.getHours()-9);
   models.sequelize.query(
     "SELECT date_format(approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM users AS u "+
@@ -163,6 +165,8 @@ router.get('/:user_id/expenses/_simple', function(req, res, next) {
   let start = new Date(req.query.start);
   let end = new Date(req.query.end);
   end.setDate(end.getDate()+1);
+  start.setHours(start.getHours()-9);
+  end.setHours(end.getHours()-9);
   models.sequelize.query(
     "SELECT date_format(approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM users AS u "+

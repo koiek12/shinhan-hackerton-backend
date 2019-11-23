@@ -117,7 +117,6 @@ router.get('/:wallet_id/users/:user_id/_sync', function(req, res, next) {
       }
   }))
   .then( transactions => {
-    console.log(transactions);
     let con = [];
     for(transaction of transactions) {
       con.push({
@@ -174,6 +173,8 @@ router.get('/:wallet_id/incomes/_simple', function(req, res, next) {
   let start = new Date(req.query.start);
   let end = new Date(req.query.end);
   end.setDate(end.getDate()+1);
+  start.setHours(start.getHours()-9);
+  end.setHours(end.getHours()-9);
   models.sequelize.query(
     "SELECT date_format(t.approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM wallets AS w "+
@@ -200,6 +201,8 @@ router.get('/:wallet_id/expenses/_simple', function(req, res, next) {
   let start = new Date(req.query.start);
   let end = new Date(req.query.end);
   end.setDate(end.getDate()+1);
+  start.setHours(start.getHours()-9);
+  end.setHours(end.getHours()-9);
   models.sequelize.query(
     "SELECT date_format(t.approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM wallets AS w "+
@@ -277,7 +280,6 @@ router.get('/:wallet_id/incomes/_list', function(req, res, next) {
 router.get('/:wallet_id/expenses/_categorize', function(req, res, next) {
   let start = new Date(req.query.start);
   let end = new Date(req.query.end);
-  end.setDate(end.getDate()+1);
   models.wallet.findOne({where:{id:req.params.wallet_id}})
   .then( wallet => wallet.getTransactions({
     where: {
@@ -325,13 +327,16 @@ router.get('/:wallet_id/_budget', function(req, res, next) {
         gender: user.dataValues.gender
       });
     }
-    var todayStart = new Date();
+    var now = new Date();
+    now.setHours(now.getHours()+9);
+    var todayStart = new Date(now);
     todayStart.setHours(0,0,0,0);
+    todayStart.setHours(todayStart.getHours()+9)
     return models.transaction.findAll({
       where: {
         userId: ids,
         approveTime: {
-          [Op.between]: [todayStart, new Date()]
+          [Op.between]: [todayStart, now]
         },
         type: {
           [Op.in]: ["국내체크", "해외체크", "국내신용", "해외신용"]
