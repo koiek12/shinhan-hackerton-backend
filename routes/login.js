@@ -1,7 +1,6 @@
 var express = require('express');
 const models = require('../models');
 var router = express.Router();
-const Op = models.Sequelize.Op;
 const shinhanApi = require('../actions/shinhanApi');
 
 /* login */
@@ -10,6 +9,9 @@ router.post('/', function(req, res, next) {
   .then( async user => {
     if(user.dataValues.password == req.body.password) {
         res.json({status:"okay"});
+        /*
+          신한 api에서 마지막으로 가져온 데이터 이후의 데이터를 모두 가져와서 테이블에 추가한다.
+        */
         let domesticCredit = await shinhanApi.getDomesticCreditCardUseage(req.body.userId);
         let domesticCheck = await shinhanApi.getDomesticCheckCardUseage(req.body.userId);
         let overseasCredit = await shinhanApi.getOverseasCreditCardUseage(req.body.userId);
@@ -30,6 +32,8 @@ router.post('/', function(req, res, next) {
         models.transaction.bulkCreate(
           transactionHistoryToTransaction(req.body.userId, transactionHistory.data)
           );
+        models.user.findOne({where:{id:req.body.userId}})
+        .then(user => user.update({lastBankSyncTime: new Date()}))
     } else {
         res.json({status:"fail"});
     }
@@ -42,8 +46,6 @@ router.post('/', function(req, res, next) {
 const currency = function(countryCode) {
   return 1000;
 }
-
-
 const domesticCreditToTransaction = function(userId, data) {
   let list = data.dataBody.grp001;
   let result = []

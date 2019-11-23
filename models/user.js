@@ -9,7 +9,12 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     email: DataTypes.STRING,
     gender: DataTypes.ENUM('male','female'),
-    budget: DataTypes.BIGINT(8)
+    budget: DataTypes.BIGINT(8),
+    lastBankSyncTime: {
+      type: DataTypes.DATE,
+      defaultValue: '1000-01-01 00:00:00',
+      allowNull: false
+    }
   }, {});
   user.associate = function(models) {
     // associations can be defined here

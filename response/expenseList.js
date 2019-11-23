@@ -7,7 +7,7 @@ module.exports = result => {
     for(r of result) {
       totalExpense += r.dataValues.amount;
       let date = r.dataValues.approveTime.toISOString().split('T')[0];
-      let time = r.dataValues.approveTime.toISOString().split('T')[1];
+      let time = r.dataValues.approveTime.toISOString().split('T')[1].slice(0,8);
       if(prevDate !== date) {
         let entry = {
           date: prevDate,
