@@ -22,13 +22,6 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(express.session({
-//   key: 'sid', // 세션키
-//   secret: 'secret', // 비밀키
-//   cookie: {
-//     maxAge: 1000 * 60 * 60 // 쿠키 유효기간 1시간
-//   }
-// }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 

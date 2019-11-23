@@ -138,17 +138,21 @@ router.get('/:wallet_id/users/:user_id/_sync', function(req, res, next) {
   }))
   .then( result => res.json({status:"ok"}))
   .catch( error => {
+    console.log(error);
     res.status(500).send(error);
   })
 });
 
 /* 가족의 일/월단위 소비내역 */
 router.get('/:wallet_id/expenses', async function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.wallet.findOne({where:{id:req.params.wallet_id}})
   .then( wallet => wallet.getTransactions({
     where: {
       approveTime: {
-        [Op.between]: [req.query.start, req.query.end]
+        [Op.between]: [start, end]
       },
       type: {
         [Op.in]: ["국내체크", "해외체크", "국내신용", "해외신용"]
@@ -167,6 +171,9 @@ router.get('/:wallet_id/expenses', async function(req, res, next) {
 
 /* 가족의 수입내역 */
 router.get('/:wallet_id/incomes/_simple', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.sequelize.query(
     "SELECT date_format(t.approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM wallets AS w "+
@@ -177,7 +184,7 @@ router.get('/:wallet_id/incomes/_simple', function(req, res, next) {
     "AND t.approveTime BETWEEN ? AND ? " +
     "GROUP BY date "+
     "ORDER BY date DESC;",
-    { replacements: [req.params.wallet_id, req.query.start, req.query.end]}
+    { replacements: [req.params.wallet_id, start, end]}
   )
   .then( result => {
     res.json(result[0]);
@@ -190,6 +197,9 @@ router.get('/:wallet_id/incomes/_simple', function(req, res, next) {
 
 /* 가족의 소비내역 */
 router.get('/:wallet_id/expenses/_simple', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.sequelize.query(
     "SELECT date_format(t.approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM wallets AS w "+
@@ -200,7 +210,7 @@ router.get('/:wallet_id/expenses/_simple', function(req, res, next) {
     "AND t.approveTime BETWEEN ? AND ? " +
     "GROUP BY date "+
     "ORDER BY date DESC;",
-    { replacements: [req.params.wallet_id, req.query.start, req.query.end]}
+    { replacements: [req.params.wallet_id, start, end]}
   )
   .then( result => {
     res.json(result[0]);
@@ -213,11 +223,14 @@ router.get('/:wallet_id/expenses/_simple', function(req, res, next) {
 
 /* 가족의 일/월단위 수입내역 */
 router.get('/:wallet_id/incomes', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.wallet.findOne({where:{id:req.params.wallet_id}})
   .then( wallet => wallet.getTransactions({
     where: {
       approveTime: {
-        [Op.between]: [req.query.start, req.query.end]
+        [Op.between]: [start, end]
       },
       type: {
         [Op.in]: ["입금"]
@@ -234,13 +247,42 @@ router.get('/:wallet_id/incomes', function(req, res, next) {
   })
 });
 
-/* 가족의 일/월단위 카테고리별 소비량 개인소비내역 */
-router.get('/:wallet_id/expenses/_categorize', function(req, res, next) {
+/* 가족의 일/월단위 수입내역 */
+router.get('/:wallet_id/incomes/_list', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.wallet.findOne({where:{id:req.params.wallet_id}})
   .then( wallet => wallet.getTransactions({
     where: {
       approveTime: {
-        [Op.between]: [req.query.start, req.query.end]
+        [Op.between]: [start, end]
+      },
+      type: {
+        [Op.in]: ["입금"]
+      }
+    },
+    include: [{ model: models.user}],
+    limit: req.query.size*1,
+    order: [['approveTime', 'DESC']]
+  }))
+  .then( result => res.json(incomeListSimple(result)))
+  .catch( error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+});
+
+/* 가족의 일/월단위 카테고리별 소비량 개인소비내역 */
+router.get('/:wallet_id/expenses/_categorize', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
+  models.wallet.findOne({where:{id:req.params.wallet_id}})
+  .then( wallet => wallet.getTransactions({
+    where: {
+      approveTime: {
+        [Op.between]: [start, end]
       },
       type: {
         [Op.in]: ["국내체크", "해외체크", "국내신용", "해외신용"]

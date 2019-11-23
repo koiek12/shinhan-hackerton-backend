@@ -61,11 +61,14 @@ router.put('/:user_id', function(req, res, next) {
 
 /* 유저의 일/월단위 개인소비내역 */
 router.get('/:user_id/expenses', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.user.findOne({where:{id:req.params.user_id}})
   .then( user => user.getTransactions({
     where: {
       approveTime: {
-        [Op.between]: [req.query.start, req.query.end]
+        [Op.between]: [start, end]
       },
       type: {
         [Op.in]: ["국내체크", "해외체크", "국내신용", "해외신용"]
@@ -82,11 +85,14 @@ router.get('/:user_id/expenses', function(req, res, next) {
 
 /* 유저의 일/월단위 개인수입내역 */
 router.get('/:user_id/incomes', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.user.findOne({where:{id:req.params.user_id}})
   .then( user => user.getTransactions({
     where: {
       approveTime: {
-        [Op.between]: [req.query.start, req.query.end]
+        [Op.between]: [start, end]
       },
       type: {
         [Op.in]: ["입금"]
@@ -103,11 +109,14 @@ router.get('/:user_id/incomes', function(req, res, next) {
 
 /* 유저의 일/월단위 카테고리별 소비량 개인소비내역 */
 router.get('/:user_id/expenses/_categorize', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.user.findOne({where:{id:req.params.user_id}})
   .then( user => user.getTransactions({
     where: {
       approveTime: {
-        [Op.between]: [req.query.start, req.query.end]
+        [Op.between]: [start, end]
       },
       type: {
         [Op.in]: ["국내체크", "해외체크", "국내신용", "해외신용"]
@@ -126,6 +135,9 @@ router.get('/:user_id/expenses/_categorize', function(req, res, next) {
 
 /* 유저의 수입내역 */
 router.get('/:user_id/incomes/_simple', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.sequelize.query(
     "SELECT date_format(approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM users AS u "+
@@ -135,7 +147,7 @@ router.get('/:user_id/incomes/_simple', function(req, res, next) {
     "AND t.approveTime BETWEEN ? AND ? " +
     "GROUP BY date "+
     "ORDER BY date DESC;",
-    { replacements: [req.params.user_id, req.query.start, req.query.end]}
+    { replacements: [req.params.user_id, start, end]}
   )
   .then( result => {
     res.json(result[0]);
@@ -148,6 +160,9 @@ router.get('/:user_id/incomes/_simple', function(req, res, next) {
 
 /* 유저의 소비내역 */
 router.get('/:user_id/expenses/_simple', function(req, res, next) {
+  let start = new Date(req.query.start);
+  let end = new Date(req.query.end);
+  end.setDate(end.getDate()+1);
   models.sequelize.query(
     "SELECT date_format(approveTime, '%Y-%m-%d') as date, SUM(t.amount) as amount "+
     "FROM users AS u "+
@@ -157,7 +172,7 @@ router.get('/:user_id/expenses/_simple', function(req, res, next) {
     "AND t.approveTime BETWEEN ? AND ? " +
     "GROUP BY date "+
     "ORDER BY date DESC;",
-    { replacements: [req.params.user_id, req.query.start,req.query.end]}
+    { replacements: [req.params.user_id, start, end]}
   )
   .then( result => {
     res.json(result[0]);
@@ -181,7 +196,6 @@ router.post('/:user_id/transactions', function(req, res, next) {
       businessType: req.body.business_type
   }))
   .then( result => {
-    console.log("get all transaction");
     res.json(result);
   })
   .catch( error => {
@@ -194,8 +208,6 @@ router.post('/:user_id/transactions/_bulk', function(req, res, next) {
   models.user.findOne({where:{id:req.params.user_id}})
   .then( user => user.createTransaction(req.body))
   .then( result => {
-    console.log(req.body);
-    console.log("get all transaction");
     res.json(result);
   })
   .catch( error => {

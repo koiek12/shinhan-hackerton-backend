@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     amount: DataTypes.BIGINT(8),
     merchantName: DataTypes.STRING,
     approveTime: DataTypes.DATE,
-    businessType: DataTypes.ENUM('쇼핑', '식비', '월급', '보험금', '공과금비', '용돈', '교육비')
+    businessType: DataTypes.ENUM('쇼핑', '식비', '월급', '보험금', '공과금비', '용돈', '교육비', '저축', '경조사', '택시', '주차장', '기타')
   }, {});
   transaction.associate = function(models) {
     // associations can be defined here

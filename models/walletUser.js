@@ -1,7 +1,6 @@
 'use strict';
 const Sequelize = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  console.log(Sequelize.NOW);
   const walletUser = sequelize.define('walletUser', {
     isAdmin: {
         type: DataTypes.BOOLEAN,
